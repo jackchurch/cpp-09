@@ -15,7 +15,9 @@ int main(int argc, char* argv[])
     std::string userfile = argv[1];
 
     BitcoinExchange exchange;
-    exchange.validateDb(database);
+    exchange.setupDb(database);
+    exchange.openUserFile(userfile);
+
     std::cout << "\n\n\n### End Ex00 ####\n\n\n" << std::endl;
 
     return (0);

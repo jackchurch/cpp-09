@@ -23,14 +23,14 @@ BitcoinExchange::~BitcoinExchange() {}
 
 
 
-bool BitcoinExchange::validateDb(std::string &database)
+void    BitcoinExchange::setupDb(std::string &database)
 {
     std::string             line;
     std::istringstream      iss(line);
     std::string             dateString;
-    Optional<std::string>   optionalDate;
+    Optional<std::string>   actualDate;
     std::string             amountString;
-    Optional<float>         optionalAmount;
+    Optional<float>         actualAmount;
     char                    seperator;
 
     int i = 0;
@@ -42,9 +42,8 @@ bool BitcoinExchange::validateDb(std::string &database)
     std::getline(infile, line);
     if (line != "date,exchange_rate")
     {
-        std::cerr << ("Database format is incorrect") << std::endl;
         infile.close();
-        return (false);
+        throw std::runtime_error("Database format is incorrect");
     }
     
     while(std::getline(infile, line))
@@ -57,51 +56,37 @@ bool BitcoinExchange::validateDb(std::string &database)
             continue ;
         }
 
-        optionalDate = checkInputDate(dateString);
-        if (!optionalDate.hasValue())
+        actualDate = checkInputDate(dateString);
+        if (!actualDate.hasValue())
         {
             std::cerr << "Database Error: Line "<< i <<" has a bad date => : " << dateString << std::endl;
             continue ;
         }
 
-        optionalAmount = checkInputAmount(amountString);
-        if (!optionalAmount.hasValue())
+        actualAmount = checkInputAmount(amountString);
+        if (!actualDate.hasValue())
         {
             continue ;
         }
-        std::string actualDate = <
         _database.insert(std::make_pair(actualDate, actualAmount));        
     }
 
     infile.close();
 
     if (_database.size() == 0)
-    {
-        return (false);
-    }
-
-    return (true);
+        throw std::runtime_error("Cannot open database");
 }
-
-
-void    printBitcoinValue(float btcPrice, float userValue)
-{
-    float bitcoinValue = btcPrice * userValue;
-    std::cout << dateString << " => " << userValue << " => " << bitcoinValue << std::fixed << std::setprecision(2) << std::endl;
-
-}
-
-
 
 void BitcoinExchange::openUserFile(std::string &userFile)
 {
     std::string             line;
     std::istringstream      iss(line);
-    std::string             userDateString;
-    std::string             userAmountString;
-    Optional<std::string>   actualDate;
-    Optional<float>         actualAmount;
+    std::string             dateString;
+    std::string             amountString;
+    Optional<std::string>   optionalDate;
+    Optional<float>         optionalAmount;
     char                    seperator;
+    float                   printRate;
 
     int i = 1;
 
@@ -120,34 +105,44 @@ void BitcoinExchange::openUserFile(std::string &userFile)
     while(std::getline(infile, line))
     {
         iss.str(line);
-        if (!(iss >> userDateString >> seperator >> userAmountString) || seperator != '|')
+        if (!(iss >> dateString >> seperator >> amountString) || seperator != '|')
         {
             std::cerr << "Error: User input line "<< i <<" has bad input => : " << line << std::endl;
             continue ;
         }
 
-        actualDate = checkInputDate(userDateString);
-        if (!actualDate.hasValue())
+        optionalDate = checkInputDate(dateString);
+        if (!optionalDate.hasValue())
         {
-            std::cerr << "Error: User input line "<< i <<" has a bad date => : " << userDateString << std::endl;
-            continue ;
-        }
-        std::string temp = actualDate;
-
-        actualAmount = checkInputAmount(userAmountString);
-        if (!actualDate.hasValue())
-        {
+            std::cerr << "Error: User input line "<< i <<" has a bad date => : " << dateString << std::endl;
             continue ;
         }
 
-        std::map<std::string, float>::iterator it = _database.find(actualDate);
-        if (it != _database.end())
+        optionalAmount = checkInputAmount(amountString);
+        if (!optionalAmount.hasValue())
         {
-            printBitcoinValue(it->second, )
-            return (it->second);
+            continue ;
         }
-
+        printRate = getRateForDate(optionalDate.getValue());
+        std::cout << optionalDate.getValue() << " => " << optionalAmount.getValue() << " => " << printRate * optionalAmount.getValue() << std::fixed << std::setprecision(2) << std::endl;
     }
+    infile.close();
+    return ;
+}
+
+float	BitcoinExchange::getRateForDate(std::string date) const
+{
+    std::map<std::string, float>::const_iterator it = _database.find(date);
+    if (it != _database.end())
+        return (it->second);
+    it = _database.lower_bound(date);
+    if (it == _database.begin())
+        return (0.0);
+    // if iterator is at the end, then lower bound is one less. 
+    // or if iterator date is sooner than wanted date, the lower bound is one less. 
+    if (it == _database.end() || it->first > date)
+        it--;
+    return (it->second);
 }
 
 

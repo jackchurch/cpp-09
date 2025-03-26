@@ -19,9 +19,9 @@ class BitcoinExchange
 		~BitcoinExchange();
 		Optional<std::string> data;
 		
-		bool	validateDb(std::string& database);
-		void	openUserFile(std::string& userFile);
-		void	readDb(std::string& filename);
-		Optional<float> 	checkInputAmount(std::string String);
+		void					setupDb(std::string& database);
+		void					openUserFile(std::string& userFile);
+		float					getRateForDate(std::string date) const;
+		Optional<float> 		checkInputAmount(std::string String);
 		Optional<std::string> 	checkInputDate(std::string dateString);
 	};
