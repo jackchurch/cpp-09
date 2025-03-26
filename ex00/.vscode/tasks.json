@@ -1,0 +1,17 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "type": "shell",
+        "label": "Make (debug)",
+        "command": "",
+        "args": ["make", "fclean", "&&", "make", "CC=\"g++ -g\""],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        },
+        "detail": "Run makefile, adding -g to all objects"
+      }
+    ]
+}
+  

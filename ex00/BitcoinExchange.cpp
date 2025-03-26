@@ -1,5 +1,3 @@
-#pragma once
-
 #include "BitcoinExchange.hpp"
 
 // Orthodox Canonical
@@ -28,14 +26,15 @@ void    BitcoinExchange::setupDb(std::string &database)
     std::string             line;
     std::istringstream      iss(line);
     std::string             dateString;
-    Optional<std::string>   actualDate;
+    std::string             actualDate;
     std::string             amountString;
-    Optional<float>         actualAmount;
-    char                    seperator;
+    float                   actualAmount;
+    std::ifstream           infile;
+    size_t                  commaPosition;
 
     int i = 0;
 
-    std::ifstream   infile(database.c_str());
+    infile.open(database.c_str(), std::ifstream::in);
     if (!infile.is_open())
         throw std::runtime_error("Cannot open database");
     
@@ -49,26 +48,26 @@ void    BitcoinExchange::setupDb(std::string &database)
     while(std::getline(infile, line))
     {
         i++;
-        iss.str(line);
-        if (!(iss >> dateString >> seperator >> amountString) || seperator != ',')
+        commaPosition = line.find_first_of(',');
+        if (commaPosition == std::string::npos)
         {
             std::cerr << "Database Error: Line "<< i <<" has bad input => : " << line << std::endl;
             continue ;
         }
+        dateString = line.substr(0, commaPosition);
+        amountString = line.substr(commaPosition + 1);
 
-        actualDate = checkInputDate(dateString);
-        if (!actualDate.hasValue())
+        if (inputDateIsValid(dateString) == false)
         {
             std::cerr << "Database Error: Line "<< i <<" has a bad date => : " << dateString << std::endl;
             continue ;
         }
 
-        actualAmount = checkInputAmount(amountString);
-        if (!actualDate.hasValue())
+        if (checkInputAmountDB(amountString, actualAmount) == false)
         {
             continue ;
         }
-        _database.insert(std::make_pair(actualDate, actualAmount));        
+        _database.insert(std::make_pair(dateString, actualAmount));        
     }
 
     infile.close();
@@ -83,12 +82,12 @@ void BitcoinExchange::openUserFile(std::string &userFile)
     std::istringstream      iss(line);
     std::string             dateString;
     std::string             amountString;
-    Optional<std::string>   optionalDate;
-    Optional<float>         optionalAmount;
-    char                    seperator;
+    std::string             optionalDate;
+    float                   optionalAmount;
     float                   printRate;
+    float                   amountFloat;
 
-    int i = 1;
+    int i = 0;
 
     std::ifstream   infile(userFile.c_str());
     if (!infile.is_open())
@@ -104,6 +103,12 @@ void BitcoinExchange::openUserFile(std::string &userFile)
 
     while(std::getline(infile, line))
     {
+        std::istringstream  iss(line);
+        std::string         dateString;
+        std::string         amountString;
+        char                seperator;
+
+        i++;
         iss.str(line);
         if (!(iss >> dateString >> seperator >> amountString) || seperator != '|')
         {
@@ -112,7 +117,7 @@ void BitcoinExchange::openUserFile(std::string &userFile)
         }
 
         optionalDate = checkInputDate(dateString);
-        if (!optionalDate.hasValue())
+        if (inputDateIsValid(dateString) == false)
         {
             std::cerr << "Error: User input line "<< i <<" has a bad date => : " << dateString << std::endl;
             continue ;
@@ -123,8 +128,18 @@ void BitcoinExchange::openUserFile(std::string &userFile)
         {
             continue ;
         }
+        try
+        {
+            amountFloat = optionalAmount.getValue();
+        }
+        catch (const std::invalid_argument &e)
+        {
+            std::cerr << "Error: Invalid amount => " << optionalAmount.getValue() << std::endl;
+            continue ;
+        }
+
         printRate = getRateForDate(optionalDate.getValue());
-        std::cout << optionalDate.getValue() << " => " << optionalAmount.getValue() << " => " << printRate * optionalAmount.getValue() << std::fixed << std::setprecision(2) << std::endl;
+        std::cout << optionalDate.getValue() << " => " << amountFloat << " => " << printRate * amountFloat << std::fixed << std::setprecision(2) << std::endl;
     }
     infile.close();
     return ;
@@ -145,39 +160,65 @@ float	BitcoinExchange::getRateForDate(std::string date) const
     return (it->second);
 }
 
-
 Optional<float>   BitcoinExchange::checkInputAmount(std::string amountString)
 {
     float amount;
     std::string sub;
-    if (amountString.back() == 'f')
+    if (amountString[amountString.size() - 1] == 'f' || amountString[amountString.size() - 1] == 'F')
         sub = amountString.substr(0, amountString.size() - 1);
     else
         sub = amountString;
 
     try
     {
-        amount = std::stod(sub);
+        std::stringstream ss(sub);
+        ss >> amount;
     }
     catch (const std::invalid_argument &e)
     {
         std::cerr << "Error: Invalid amount => " << sub << std::endl;
-        return ;
+        return (static_cast<float>(NULL));
     }
     catch (const std::out_of_range &e)
     {
         std::cerr << "Error: Amount out of range => " << sub << std::endl;
-        return ;
+        return (static_cast<float>(NULL));
     }
     if (amount < 0 || amount > 1000)
     {
         std::cerr << "Error: Amount out of range => " << sub << std::endl;
-        return ;
+        return (static_cast<float>(NULL));
     }
     return (amount);
 }
 
-Optional<std::string> BitcoinExchange::checkInputDate(std::string dateString)
+bool   BitcoinExchange::checkInputAmountDB(std::string amountString, float &actualAmount)
+{
+    std::string sub;
+    if (amountString[amountString.size() - 1] == 'f' || amountString[amountString.size() - 1] == 'F')
+        sub = amountString.substr(0, amountString.size() - 1);
+    else
+        sub = amountString;
+
+    try
+    {
+        std::stringstream ss(sub);
+        ss >> actualAmount;
+    }
+    catch (const std::invalid_argument &e)
+    {
+        std::cerr << "Error: Invalid amount => " << sub << std::endl;
+        return (false);
+    }
+    catch (const std::out_of_range &e)
+    {
+        std::cerr << "Error: Amount out of range => " << sub << std::endl;
+        return (false);
+    }
+    return (true);
+}
+
+bool    BitcoinExchange::inputDateIsValid(std::string dateString)
 {
     std::istringstream iss(dateString);
     int     d, m, y;
@@ -185,7 +226,13 @@ Optional<std::string> BitcoinExchange::checkInputDate(std::string dateString)
     if (iss >> y >> delim >> m >> delim >> d) 
     {
         struct tm date;
-        std::memset(&date, 0, sizeof(date));
+
+        date.tm_sec = 0;
+        date.tm_min = 0;
+        date.tm_hour = 0;
+        date.tm_wday = 0;
+        date.tm_yday = 0;
+        
         date.tm_mday = d;
         date.tm_mon = m - 1;
         date.tm_year = y - 1900;
@@ -197,9 +244,9 @@ Optional<std::string> BitcoinExchange::checkInputDate(std::string dateString)
         const struct tm *norm = localtime(&when);
         if (norm->tm_year == y - 1900 && norm->tm_mday == d && norm->tm_mon  == m - 1)
         {
-            return (dateString);
+            return (true);
         }
     }
-    return ;
+    return (false);
 }
 
