@@ -51,7 +51,7 @@ void    BitcoinExchange::setupDb(std::string &database)
         commaPosition = line.find_first_of(',');
         if (commaPosition == std::string::npos)
         {
-            std::cerr << "Database Error: Line "<< i <<" has bad input => : " << line << std::endl;
+            std::cerr << "Database Error: Line "<< i <<" has bad input => : \"" << line << "\"" << std::endl;
             continue ;
         }
         dateString = line.substr(0, commaPosition);
@@ -82,10 +82,7 @@ void BitcoinExchange::openUserFile(std::string &userFile)
     std::istringstream      iss(line);
     std::string             dateString;
     std::string             amountString;
-    std::string             optionalDate;
-    float                   optionalAmount;
     float                   printRate;
-    float                   amountFloat;
 
     int i = 0;
 
@@ -107,39 +104,29 @@ void BitcoinExchange::openUserFile(std::string &userFile)
         std::string         dateString;
         std::string         amountString;
         char                seperator;
+        float               amountFloat;
 
         i++;
         iss.str(line);
         if (!(iss >> dateString >> seperator >> amountString) || seperator != '|')
         {
-            std::cerr << "Error: User input line "<< i <<" has bad input => : " << line << std::endl;
+            std::cerr << "Error: User input line "<< i <<" has bad input format => \"" << line << "\""  << std::endl;
             continue ;
         }
 
-        optionalDate = checkInputDate(dateString);
         if (inputDateIsValid(dateString) == false)
         {
-            std::cerr << "Error: User input line "<< i <<" has a bad date => : " << dateString << std::endl;
+            std::cerr << "Error: User input line "<< i <<" has a bad date => \"" << dateString << "\"" << std::endl;
             continue ;
         }
 
-        optionalAmount = checkInputAmount(amountString);
-        if (!optionalAmount.hasValue())
+        if (checkInputAmountUser(amountString, amountFloat) == false)
         {
-            continue ;
-        }
-        try
-        {
-            amountFloat = optionalAmount.getValue();
-        }
-        catch (const std::invalid_argument &e)
-        {
-            std::cerr << "Error: Invalid amount => " << optionalAmount.getValue() << std::endl;
             continue ;
         }
 
-        printRate = getRateForDate(optionalDate.getValue());
-        std::cout << optionalDate.getValue() << " => " << amountFloat << " => " << printRate * amountFloat << std::fixed << std::setprecision(2) << std::endl;
+        printRate = getRateForDate(dateString);
+        std::cout << dateString << " => " << amountFloat << " => " << printRate * amountFloat << std::fixed << std::setprecision(2) << std::endl;
     }
     infile.close();
     return ;
@@ -160,9 +147,8 @@ float	BitcoinExchange::getRateForDate(std::string date) const
     return (it->second);
 }
 
-Optional<float>   BitcoinExchange::checkInputAmount(std::string amountString)
+bool   BitcoinExchange::checkInputAmountUser(std::string amountString, float &actualAmount)
 {
-    float amount;
     std::string sub;
     if (amountString[amountString.size() - 1] == 'f' || amountString[amountString.size() - 1] == 'F')
         sub = amountString.substr(0, amountString.size() - 1);
@@ -172,24 +158,24 @@ Optional<float>   BitcoinExchange::checkInputAmount(std::string amountString)
     try
     {
         std::stringstream ss(sub);
-        ss >> amount;
+        ss >> actualAmount;
     }
     catch (const std::invalid_argument &e)
     {
         std::cerr << "Error: Invalid amount => " << sub << std::endl;
-        return (static_cast<float>(NULL));
+        return (false);
     }
     catch (const std::out_of_range &e)
     {
         std::cerr << "Error: Amount out of range => " << sub << std::endl;
-        return (static_cast<float>(NULL));
+        return (false);
     }
-    if (amount < 0 || amount > 1000)
+    if (actualAmount < 0 || actualAmount > 1000)
     {
-        std::cerr << "Error: Amount out of range => " << sub << std::endl;
-        return (static_cast<float>(NULL));
+        std::cerr << "Error: Amount not within 0 and 1000 => " << sub << std::endl;
+        return (false);
     }
-    return (amount);
+    return (true);
 }
 
 bool   BitcoinExchange::checkInputAmountDB(std::string amountString, float &actualAmount)
