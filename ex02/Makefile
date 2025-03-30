@@ -9,7 +9,7 @@ OPT = -O0
 DEPFLAGS = -MP -MD
 CFLAGS=-Wall -Wextra -Werror -std=c++98 -I. $(OPT) 
 
-CFILES = main.cpp RPN.cpp
+CFILES = main.cpp PmergeMe.cpp
 OBJECTS = $(patsubst %.$(SOURCETYPE),%.o,$(CFILES))
 DEPFILES = $(patsubst %.$(SOURCETYPE),%.d,$(CFILES))
 

@@ -69,7 +69,8 @@ int RPN::calculate(int argc, char* argv[])
 {
     if (argc != 2)
     {
-        std::cerr << "Error" << std::endl;
+        std::cerr << "Error: Operators and operands must be enclosed in quotation marks as one string." << std::endl;
+        std::cerr << "Usage including quotes: ./RPN \"5 9 7 / +\""<< std::endl;
         return (1);
     }
 
@@ -79,7 +80,7 @@ int RPN::calculate(int argc, char* argv[])
     {
         if (token.length() != 1)
         {
-            std::cerr << "Error" << std::endl;
+            std::cerr << "Error: Only single digits allowed and operators must be seperated by a space from digits." << std::endl;
             return (1);
         }
         if (isOperator(token) == true)
