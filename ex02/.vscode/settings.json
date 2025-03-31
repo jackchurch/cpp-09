@@ -51,6 +51,8 @@
         "variant": "cpp",
         "vector": "cpp",
         "algorithm": "cpp",
-        "*.tpp": "cpp"
+        "*.tpp": "cpp",
+        "iterator": "cpp",
+        "list": "cpp"
     }
 }
