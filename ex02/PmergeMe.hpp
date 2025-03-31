@@ -22,8 +22,8 @@ template <typename Container>
 class PmergeMe
 {
     private:
-       Container    _data;
-       Container    _leftovers;
+       Container                _data;
+       std::vector<std::pair<int, int> >    _leftovers;
        unsigned int _maxPairs;
     // Container   _data;
     // Orthodox conanoical
@@ -36,7 +36,7 @@ class PmergeMe
         void    parseInput(int argc, char* argv[]);
         void    printOut();
         void    mergeSort();
-        void    makePairs(int iterationNumber, Container& startSequence, Container& leftover);
+        void    makePairs(int iterationNumber, Container& startSequence);
         void    setMaxPairs(int argc);
 
     };

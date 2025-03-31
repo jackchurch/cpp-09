@@ -8,10 +8,12 @@ int main(int argc, char* argv[])
 	// PmergeMe myVector;
 	// myVector._lData.push_back(5);
 
-	PmergeMe<std::vector<int> > myVector;
-	myVector.parseInput(argc, argv);
-	myVector.printOut();
-	myVector.mergeSort();
-	
+	PmergeMe<std::vector<int> > *myVector = new PmergeMe<std::vector<int> >();
+	myVector->parseInput(argc, argv);
+	myVector->printOut();
+	myVector->mergeSort();
+	myVector->printOut();
+	delete (myVector);
+
 	return (0);
 }
