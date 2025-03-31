@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <list>
+#include <cmath>
 #include <iostream>
 
 // class PmergeMe
@@ -21,7 +22,9 @@ template <typename Container>
 class PmergeMe
 {
     private:
-       Container   _data;
+       Container    _data;
+       Container    _leftovers;
+       unsigned int _maxPairs;
     // Container   _data;
     // Orthodox conanoical
     public:
@@ -30,9 +33,13 @@ class PmergeMe
         PmergeMe(const PmergeMe& orignal);
         PmergeMe& operator=(const PmergeMe& orignal);
 
-        void   parseInput(int argc, char* argv[]);
-        void        printOut();
-};
+        void    parseInput(int argc, char* argv[]);
+        void    printOut();
+        void    mergeSort();
+        void    makePairs(int iterationNumber, Container& startSequence, Container& leftover);
+        void    setMaxPairs(int argc);
+
+    };
 
 bool	isNumber(std::string s);
 

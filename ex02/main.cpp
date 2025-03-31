@@ -11,7 +11,7 @@ int main(int argc, char* argv[])
 	PmergeMe<std::vector<int> > myVector;
 	myVector.parseInput(argc, argv);
 	myVector.printOut();
-
+	myVector.mergeSort();
 	
 	return (0);
 }
