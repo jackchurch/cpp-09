@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <list>
+#include <iostream>
 
 // class PmergeMe
 // {
@@ -16,20 +17,25 @@
 //         std::list<int> _lData;
 // };
 
-template <typename T>
+template <typename Container>
 class PmergeMe
 {
     private:
-        // T   _data;
+       Container   _data;
+    // Container   _data;
     // Orthodox conanoical
     public:
         PmergeMe();
         ~PmergeMe();
         PmergeMe(const PmergeMe& orignal);
         PmergeMe& operator=(const PmergeMe& orignal);
-        T   _data;
 
+        void   parseInput(int argc, char* argv[]);
+        void        printOut();
 };
+
+bool	isNumber(std::string s);
+
 
 #include "PmergeMe.tpp"
 
