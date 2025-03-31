@@ -23,9 +23,15 @@ class PmergeMe
 {
     private:
        Container                _data;
+       std::vector<std::pair<int, int> >    _pMain;
+       std::vector<std::pair<int, int> >    _pend;
+       std::vector<std::pair<int, int> >    _startingSequence;
        std::vector<std::pair<int, int> >    _leftovers;
        unsigned int _maxPairs;
-    // Container   _data;
+       unsigned int                      _iterationNumber;
+       unsigned int             _NumberOfSets;
+       int _maxNumbersPerSet;
+           // Container   _data;
     // Orthodox conanoical
     public:
         PmergeMe();
@@ -33,13 +39,21 @@ class PmergeMe
         PmergeMe(const PmergeMe& orignal);
         PmergeMe& operator=(const PmergeMe& orignal);
 
+        // Sort into sets:
         void    parseInput(int argc, char* argv[]);
         void    printOut();
         void    mergeSort();
         void    makePairs(int iterationNumber, Container& startSequence);
         void    setMaxPairs(int argc);
 
-    };
+        // Merge sets into final list
+        void    makeMainAndPend();
+        void    beginMergin();
+        void    goMerge();
+        void setJacobsthalNumberIndex(int& j, int& jPrev, int& jPrevPrev);
+        void    binaryMerge(std::vector<std::pair<int, int> >::iterator& pendEnd, int j);
+        };
+
 
 bool	isNumber(std::string s);
 

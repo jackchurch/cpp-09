@@ -13,6 +13,7 @@ int main(int argc, char* argv[])
 	myVector->printOut();
 	myVector->mergeSort();
 	myVector->printOut();
+	myVector->beginMerging();
 	delete (myVector);
 
 	return (0);

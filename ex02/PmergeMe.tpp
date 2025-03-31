@@ -136,7 +136,7 @@ void    PmergeMe<Container>::makePairs(int iterationNumber, Container& startSequ
             {
                 while (leftIT != _data.end() && leftIT < _data.end())
                 {
-                    this->_leftovers.push_back(std::make_pair(iterationNumber, *leftIT));
+                    this->_leftovers.push_back(std::make_pair(iterationNumber + 1, *leftIT));
                     std::advance(leftIT, 1);
                 }
                 break ;
@@ -147,7 +147,7 @@ void    PmergeMe<Container>::makePairs(int iterationNumber, Container& startSequ
             std::advance(leftIT, incrementAmout - 1);
             while (leftIT != _data.end())
             {
-                this->_leftovers.push_back(std::make_pair(iterationNumber, *leftIT));
+                this->_leftovers.push_back(std::make_pair(iterationNumber + 1, *leftIT));
                 std::advance(leftIT, 1);
             }
             break ;
@@ -171,20 +171,156 @@ void    PmergeMe<Container>::setMaxPairs(int argc)
 template <typename Container>
 void    PmergeMe<Container>::mergeSort()
 {
-    unsigned int iterationNumber = 0;
+    this->_iterationNumber = 0;
     Container   startSequence;
 
     if (_data.size() <= 1)
     return ;
 
-    while (iterationNumber != this->_maxPairs)
+    while (this->_iterationNumber != this->_maxPairs)
     {
         startSequence.clear();
-        makePairs(iterationNumber, startSequence);
-        iterationNumber++;
+        makePairs(_iterationNumber, startSequence);
+        this->_iterationNumber++;
     }
-    startSequence.clear();
-
-    
- 
+    startSequence.clear(); 
 }
+
+template <typename Container>
+void PmergeMe<Container>::makeMainAndPend()
+{
+    this->_NumberOfSets = _data.size() / _iterationNumber; //4 = 16 / 4
+    typename Container::iterator it = _data.begin();
+    this->_iterationNumber--;
+    _maxNumbersPerSet = _data.size() / _NumberOfSets;
+    int    main = 1;
+    int numberInSet = 0;
+    while (it != _data.end())
+    {
+        if (setsMade == 0) // Do inital b1 set:
+        {
+            while (numberInSet < _maxNumbersPerSet)
+            {
+                _pMain.push_back(std::make_pair(i * -1, *it));
+                std::advance(it, 1);
+                numberInSet++;
+            }
+            numberInSet = 0;
+            setsMade = 1;
+            continue ;
+        }
+
+        while (numberInSet < _maxNumbersPerSet)
+        {
+            if (main > 0)
+                _pMain.push_back(std::make_pair(main, *it));
+            else
+                _pend.push_back(std::make_pair(main, *it));
+
+            std::advance(it, 1);
+            numberInSet++;
+        }
+        if (main < 0)
+        {
+            main *= -1;
+        }
+        else
+        {
+            main++;
+            main *= -1;
+        }
+        numberInSet = 0;
+        setsMade++;
+    }
+    if (setsMade == _NumberOfSets)
+    {
+        if (main > 0)
+            main *= -1;
+        std::vector<std::pair<int, int> >::iterator it = _leftovers.begin();
+        numberInSet = 0;
+        while (it != _leftovers.end())
+        {
+            if (it->first == static_cast<int>(_iterationNumber))
+            {
+                if (numberInSet < _maxNumbersPerSet)
+                {
+                    _pend.push_back(std::make_pair(main, it->second));
+                    numberInSet++;
+                }
+                if (numberInSet == _maxNumbersPerSet)
+                {
+                    main--;
+                }
+            }
+            std::advance(it, 1);
+        }            
+    }
+}
+
+// 0 1 1 3 5 11 21
+template<typename Container>
+void	PmergeMe<Container>::setJacobsthalNumberIndex(int& j, int& jPrev, int& jPrevPrev)
+{
+	if (n == 0)
+		return 0;
+	if (n == 1)
+		return 1;
+
+    j = jPrev + 2 * jPrevPrev;
+    jPrevPrev = jPrev;
+    jPrev = j;
+}
+
+template <typename Container>
+void PmergeMe<Container>::binaryMerge(std::vector<std::pair<int, int> >::iterator& pendEnd, int j)
+{
+    int positiveJ = j * -1;
+    if ()
+}
+
+template <typename Container>
+void PmergeMe<Container>::goMerge()
+{
+
+    int j = 1;
+    int jPrev = 1;
+    int jPrevPrev = 0;
+    getJacobsthalNumberIndex(j, jPrev, jPrevPrev);
+
+    int negativeJ = j * -1;
+    std::vector<std::pair<int, int> >::iterator pendIT = _pend.begin();
+    std::vector<std::pair<int, int> >::iterator pendEnd = _pend.begin();
+
+    while (pendIT != _pend.end())
+    {
+        if (pendIT->first != j)
+        {
+            std::advance(pendIT, 1);
+            continue ;
+        }
+        if (pendIT->first == j)
+        {
+            pendEnd = pendIT;
+            std::advance(pendEnd, _maxNumbersPerSet - 1);
+            binaryMerge(penEnd, j);
+        }
+    }
+
+}
+
+template <typename Container>
+void PmergeMe<Container>::beginMergin()
+{
+    int             i = 1;
+    unsigned int    setsMade = 0;
+
+    while (_iterationNumber > 0)
+    {
+        makeMainAndPend();
+        goMerge();
+
+    }
+}
+
+// 39 42 2 45 23 40 11 61          5 18 38 51 52 66 15 86
+// 2 sets b1 and a1
