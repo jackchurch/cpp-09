@@ -62,7 +62,7 @@ void PmergeMe<Container>::printOut()
 }
 
 template <typename Container>
-void    PmergeMe<Container>::makePairs(int iterationNumber, Container& startSequence)
+void    PmergeMe<Container>::makePairs(Container& startSequence)
 {
    // pair<b, a>
     //       a1 -- a2 -- a3
@@ -80,17 +80,17 @@ void    PmergeMe<Container>::makePairs(int iterationNumber, Container& startSequ
     //  leftover(4, 65)
 
     typename Container::iterator    leftIT = _data.begin();
-    int     incrementAmout = std::pow(2, iterationNumber);
+    _incrementAmout = std::pow(2, _iterationNumber);
     while (leftIT != _data.end())
     {
         typename Container::iterator    rightIT = leftIT;
         typename Container::iterator    leftLimit = leftIT;
-        std::advance(rightIT, incrementAmout);
+        std::advance(rightIT, _incrementAmout);
         typename Container::iterator    rightLimit = rightIT;
         // 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6
         //         L   R 
-        std::advance(leftLimit, incrementAmout - 1);
-        std::advance(rightLimit, incrementAmout - 1);
+        std::advance(leftLimit, _incrementAmout - 1);
+        std::advance(rightLimit, _incrementAmout - 1);
 
         if (rightIT != _data.end())
         {
@@ -130,13 +130,13 @@ void    PmergeMe<Container>::makePairs(int iterationNumber, Container& startSequ
                 }
                 startSequence.push_back(*tempIT);
             }
-            std::advance(leftIT, incrementAmout * 2);
-            std::advance(rightIT, incrementAmout * 2);
+            std::advance(leftIT, _incrementAmout * 2);
+            std::advance(rightIT, _incrementAmout * 2);
             if (rightIT == _data.end() || rightIT > _data.end()) // right iteator has gathered all the data, collect leftovers
             {
                 while (leftIT != _data.end() && leftIT < _data.end())
                 {
-                    this->_leftovers.push_back(std::make_pair(iterationNumber + 1, *leftIT));
+                    this->_leftovers.push_back(std::make_pair(_iterationNumber + 1, *leftIT));
                     std::advance(leftIT, 1);
                 }
                 break ;
@@ -144,10 +144,10 @@ void    PmergeMe<Container>::makePairs(int iterationNumber, Container& startSequ
     }
         else
         {
-            std::advance(leftIT, incrementAmout - 1);
+            std::advance(leftIT, _incrementAmout - 1);
             while (leftIT != _data.end())
             {
-                this->_leftovers.push_back(std::make_pair(iterationNumber + 1, *leftIT));
+                this->_leftovers.push_back(std::make_pair(_iterationNumber + 1, *leftIT));
                 std::advance(leftIT, 1);
             }
             break ;
@@ -180,7 +180,7 @@ void    PmergeMe<Container>::mergeSort()
     while (this->_iterationNumber != this->_maxPairs)
     {
         startSequence.clear();
-        makePairs(_iterationNumber, startSequence);
+        makePairs(startSequence);
         this->_iterationNumber++;
     }
     startSequence.clear(); 
@@ -189,19 +189,21 @@ void    PmergeMe<Container>::mergeSort()
 template <typename Container>
 void PmergeMe<Container>::makeMainAndPend()
 {
-    this->_NumberOfSets = _data.size() / _iterationNumber; //4 = 16 / 4
+    int     bNumber     = 1;
+    int     numberInSet = 0;
+    int     setsMade    = 0;
+
     typename Container::iterator it = _data.begin();
+    this->_NumberOfSets = _data.size() / _iterationNumber; //4 = 16 / 4
     this->_iterationNumber--;
     _maxNumbersPerSet = _data.size() / _NumberOfSets;
-    int    main = 1;
-    int numberInSet = 0;
     while (it != _data.end())
     {
         if (setsMade == 0) // Do inital b1 set:
         {
             while (numberInSet < _maxNumbersPerSet)
             {
-                _pMain.push_back(std::make_pair(i * -1, *it));
+                _pMain.push_back(std::make_pair(bNumber * -1, *it));
                 std::advance(it, 1);
                 numberInSet++;
             }
@@ -212,30 +214,30 @@ void PmergeMe<Container>::makeMainAndPend()
 
         while (numberInSet < _maxNumbersPerSet)
         {
-            if (main > 0)
-                _pMain.push_back(std::make_pair(main, *it));
+            if (bNumber > 0)
+                _pMain.push_back(std::make_pair(bNumber, *it));
             else
-                _pend.push_back(std::make_pair(main, *it));
+                _pend.push_back(std::make_pair(bNumber, *it));
 
             std::advance(it, 1);
             numberInSet++;
         }
-        if (main < 0)
+        if (bNumber < 0)
         {
-            main *= -1;
+            bNumber *= -1;
         }
         else
         {
-            main++;
-            main *= -1;
+            bNumber++;
+            bNumber *= -1;
         }
         numberInSet = 0;
         setsMade++;
     }
     if (setsMade == _NumberOfSets)
     {
-        if (main > 0)
-            main *= -1;
+        if (bNumber > 0)
+        bNumber *= -1;
         std::vector<std::pair<int, int> >::iterator it = _leftovers.begin();
         numberInSet = 0;
         while (it != _leftovers.end())
@@ -244,12 +246,12 @@ void PmergeMe<Container>::makeMainAndPend()
             {
                 if (numberInSet < _maxNumbersPerSet)
                 {
-                    _pend.push_back(std::make_pair(main, it->second));
+                    _pend.push_back(std::make_pair(bNumber, it->second));
                     numberInSet++;
                 }
                 if (numberInSet == _maxNumbersPerSet)
                 {
-                    main--;
+                    bNumber--;
                 }
             }
             std::advance(it, 1);
@@ -259,66 +261,140 @@ void PmergeMe<Container>::makeMainAndPend()
 
 // 0 1 1 3 5 11 21
 template<typename Container>
-void	PmergeMe<Container>::setJacobsthalNumberIndex(int& j, int& jPrev, int& jPrevPrev)
+void	PmergeMe<Container>::setJacobsthalNumberIndex(int* j, int* jPrev, int* jPrevPrev)
 {
-	if (n == 0)
-		return 0;
-	if (n == 1)
-		return 1;
-
-    j = jPrev + 2 * jPrevPrev;
-    jPrevPrev = jPrev;
-    jPrev = j;
+    *j = *jPrev + *jPrevPrev + *jPrevPrev; // 3  5  11
+    *jPrevPrev = *jPrev; // 1  3  5
+    *jPrev = *j; // 3  5  11
 }
 
 template <typename Container>
-void PmergeMe<Container>::binaryMerge(std::vector<std::pair<int, int> >::iterator& pendEnd, int j)
+std::vector<std::pair<int, int> >::iterator& 
+    PmergeMe<Container>::binarySearch( 
+        std::vector<std::pair<int, int> >::iterator& pendEnd, 
+        std::vector<std::pair<int, int> >::iterator& mainLeftIT, 
+        std::vector<std::pair<int, int> >::iterator& mainRightIT, 
+        int negJ)
 {
-    int positiveJ = j * -1;
-    if ()
-}
-
-template <typename Container>
-void PmergeMe<Container>::goMerge()
-{
-
-    int j = 1;
-    int jPrev = 1;
-    int jPrevPrev = 0;
-    getJacobsthalNumberIndex(j, jPrev, jPrevPrev);
-
-    int negativeJ = j * -1;
-    std::vector<std::pair<int, int> >::iterator pendIT = _pend.begin();
-    std::vector<std::pair<int, int> >::iterator pendEnd = _pend.begin();
-
-    while (pendIT != _pend.end())
+    // negJ is b-sequence, j is a-sequence
+    // if negJ is -3 then j is 3. Search limieted to -1, 1, -2, 2. Cannot be more than 3. 
+    // Find half way point for -1, 1 and 2
+    // Loop until a3 is found for b3's upperbound.
+    if ((negJ * -1) < mainRightIT->first)
     {
-        if (pendIT->first != j)
+        while (negJ * -1 != mainRightIT->first)
+        {
+            std::advance(mainRightIT, _maxNumbersPerSet * -1);
+        }
+    }
+    
+    while (std::distance(mainLeftIT, mainRightIT) > 3)
+    {
+        std::vector<std::pair<int, int> >::iterator mainMidIT = _pMain.begin();
+        // Make halfway  if j = 3, mid = 1. remember this will include -1, +1, +2 but not +3
+        // int halfway = numberOfSetsToUpperBound / 2;
+        int distance = std::distance(mainLeftIT, mainRightIT) + 1;
+        int numberOfSetsInpMain = (distance / _maxNumbersPerSet);
+        int halfway = numberOfSetsInpMain / 2;
+        if (halfway != 0)
+            std::advance(mainMidIT, halfway * (_incrementAmout - 1)); // go to last value of mid set. 
+        else
+            std::advance(mainMidIT, _incrementAmout - 1); // go to last value of mid set. 
+        if (mainMidIT == mainRightIT)
+        {
+            return (mainLeftIT);
+        }
+        if (pendEnd->second > mainMidIT->second)
+        {
+            // In the second half, left search area will start at current mid. 
+            mainLeftIT = mainMidIT;
+            // increment by 1 as it was greater than the current mid which means it isn't mid. 
+            std::advance(mainRightIT, (_iterationNumber * -1));
+        }
+        else
+        {
+            // it is in the left half. right search area will end at curent mid. 
+            // but not minus one set as it could be the old mid/new right where we insert. 
+            mainRightIT = mainMidIT;
+        }
+    }
+    return (mainLeftIT);
+}
+
+template <typename Container>
+void PmergeMe<Container>::goMerge(int k, int jPrevPrev)
+{
+    int negJ = k * -1;
+    int negJPrev = jPrevPrev * -1;
+
+    std::vector<std::pair<int, int> >::iterator pendIT = _pend.begin();
+    std::vector<std::pair<int, int> >::iterator pendEnd = _pend.end();
+    std::vector<std::pair<int, int> >::iterator mainLeftIT = _pMain.begin();
+    std::vector<std::pair<int, int> >::iterator mainRightIT = _pMain.end();
+    std::vector<std::pair<int, int> >::iterator insertPosition;
+    std::advance(mainRightIT, -1);
+    std::advance(pendEnd, -1);
+
+    // Only go down from current J to 1 before prev J
+    // There might still be more b-seqences set to process but that
+    // Will happen on a loop out of this loop. 
+    while (negJ < negJPrev)
+    {
+        pendIT = _pend.begin();
+        pendEnd = _pend.end();
+        std::advance(pendEnd, -1);
+        while (pendIT->first != negJ && pendIT != pendEnd)
         {
             std::advance(pendIT, 1);
-            continue ;
         }
-        if (pendIT->first == j)
+        if (pendIT->first == negJ)
         {
             pendEnd = pendIT;
             std::advance(pendEnd, _maxNumbersPerSet - 1);
-            binaryMerge(penEnd, j);
+            insertPosition = binarySearch(pendEnd, mainLeftIT, mainRightIT, negJ);
+            _pMain.insert(insertPosition, pendIT, pendEnd + 1);
+            _pend.erase(pendIT, pendEnd + 1);
         }
+        negJ++; 
+        // if using b-sequence, this would normaly decrement, but we are using negative numbers for b-sequence, so increment to previous -J nubmer
+        // -3 becomes -2. negJPrev is -1 for the first function iteration. 
     }
-
 }
 
+// 0 1 1 3 5 11 21
 template <typename Container>
 void PmergeMe<Container>::beginMergin()
 {
-    int             i = 1;
-    unsigned int    setsMade = 0;
+    // int             i = 1;
+    // unsigned int    setsMade = 0;
 
-    while (_iterationNumber > 0)
+    // While:
+    // Make main and pend from _data and leftovers. 
+    while (_iterationNumber >= 0)
     {
         makeMainAndPend();
-        goMerge();
+        int j = 0;
+        int jPrev = 1;
+        int jPrevPrev = 1;
 
+        _iterationNumber--;
+        _incrementAmout = std::pow(2, _iterationNumber);
+
+        // While Pend still has data to move into main. 
+        // The main and pend sequence are created above our of this loop
+        while (_pend.size() > 0)
+        {
+            setJacobsthalNumberIndex(&j, &jPrev, &jPrevPrev);
+            int k = j;
+            // While, will stop before the previous Jacobsthal Number.
+            // I had to set the jPrev to the current. Don't worry about it.
+            // k will be the current set to merge. 
+            while (k > jPrevPrev)
+            {
+                goMerge(k, jPrevPrev);
+                k--;
+            }
+        }
     }
 }
 

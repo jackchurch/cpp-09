@@ -22,16 +22,18 @@ template <typename Container>
 class PmergeMe
 {
     private:
-       Container                _data;
-       std::vector<std::pair<int, int> >    _pMain;
-       std::vector<std::pair<int, int> >    _pend;
-       std::vector<std::pair<int, int> >    _startingSequence;
-       std::vector<std::pair<int, int> >    _leftovers;
-       unsigned int _maxPairs;
-       unsigned int                      _iterationNumber;
-       unsigned int             _NumberOfSets;
-       int _maxNumbersPerSet;
-           // Container   _data;
+        Container   _data;
+        int         _maxPairs;
+        int         _iterationNumber;
+        int         _NumberOfSets;
+        int         _maxNumbersPerSet;
+        int         _incrementAmout;
+
+        std::vector<std::pair<int, int> >    _pMain;
+        std::vector<std::pair<int, int> >    _pend;
+        std::vector<std::pair<int, int> >    _startingSequence;
+        std::vector<std::pair<int, int> >    _leftovers;    
+
     // Orthodox conanoical
     public:
         PmergeMe();
@@ -43,15 +45,20 @@ class PmergeMe
         void    parseInput(int argc, char* argv[]);
         void    printOut();
         void    mergeSort();
-        void    makePairs(int iterationNumber, Container& startSequence);
+        void    makePairs(Container& startSequence);
         void    setMaxPairs(int argc);
 
         // Merge sets into final list
         void    makeMainAndPend();
         void    beginMergin();
-        void    goMerge();
-        void setJacobsthalNumberIndex(int& j, int& jPrev, int& jPrevPrev);
-        void    binaryMerge(std::vector<std::pair<int, int> >::iterator& pendEnd, int j);
+        void    goMerge(int k, int jPrev);
+        void    setJacobsthalNumberIndex(int* j, int* jPrev, int* jPrevPrev);
+        std::vector<std::pair<int, int> >::iterator&  
+            binarySearch( 
+                std::vector<std::pair<int, int> >::iterator& pendEnd, 
+                std::vector<std::pair<int, int> >::iterator& mainLeftIT, 
+                std::vector<std::pair<int, int> >::iterator& mainRightIT, 
+                int j);
         };
 
 
