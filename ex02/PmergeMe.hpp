@@ -23,15 +23,17 @@ class PmergeMe
 {
     private:
         Container   _data;
-        int         _maxPairs;
+        int         _maxIteration;
         int         _iterationNumber;
         int         _NumberOfSets;
         int         _maxNumbersPerSet;
         int         _incrementAmout;
+        int         _mergeIterationNumber;
+        int         _mergeNumbersPerSet;
 
         std::vector<std::pair<int, int> >    _pMain;
         std::vector<std::pair<int, int> >    _pend;
-        std::vector<std::pair<int, int> >    _startingSequence;
+        std::vector<int>                     _startingSequence;
         std::vector<std::pair<int, int> >    _leftovers;    
 
     // Orthodox conanoical
@@ -51,15 +53,17 @@ class PmergeMe
         // Merge sets into final list
         void    makeMainAndPend();
         void    beginMergin();
-        void    goMerge(int k, int jPrev);
+        void    goMerge(int k, int* jPrev);
         void    setJacobsthalNumberIndex(int* j, int* jPrev, int* jPrevPrev);
+        void    clearPMain();
         std::vector<std::pair<int, int> >::iterator&  
             binarySearch( 
-                std::vector<std::pair<int, int> >::iterator& pendEnd, 
+                int needle, 
                 std::vector<std::pair<int, int> >::iterator& mainLeftIT, 
-                std::vector<std::pair<int, int> >::iterator& mainRightIT, 
-                int j);
-        };
+                std::vector<std::pair<int, int> >::iterator& mainRightIT,
+                std::vector<std::pair<int, int> >::iterator& mainMidIT);
+            
+            };
 
 
 bool	isNumber(std::string s);
