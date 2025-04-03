@@ -135,6 +135,13 @@ void    PmergeMe<Container>::makePairs(Container& startSequence)
     this->_data = startSequence;
 }
 
+double setLog2(double x)
+{
+	if (x <= 0)
+		return (std::numeric_limits<double>::infinity());
+	return (std::log(x) / std::log(2));
+}
+
 template <typename Container>
 void    PmergeMe<Container>::setMaxPairs(int argc)
 {
@@ -144,7 +151,7 @@ void    PmergeMe<Container>::setMaxPairs(int argc)
         power*=2;
     }
     power/=2;
-    this->_maxIteration = std::log2(power);
+    this->_maxIteration = setLog2(power);
 }
 
 template <typename Container>
@@ -256,7 +263,7 @@ void PmergeMe<Container>::makeMainAndPend()
             if (leftLoIT->first == static_cast<int>(_iterationNumber))
             {
                 std::vector<std::pair<int, int> >::iterator rightLoIT = leftLoIT;
-                std::vector<std::pair<int, int> >::iterator pendIT = _pend.begin();
+               // std::vector<std::pair<int, int> >::iterator pendIT = _pend.begin();
                 std::vector<std::pair<int, int> >::iterator pendEndIT = _pend.end();
                 // Make rightLoIT last of this set
                 std::advance(rightLoIT, _incrementAmout);

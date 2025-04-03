@@ -4,6 +4,13 @@
 #include <cmath>
 #include <iostream>
 #include <iomanip>
+#include <typeinfo>
+#include <deque>
+#include <cerrno>
+#include <limits>
+#include <cstdlib>
+#include <climits>
+#include <algorithm>
 
 template <typename Container>
 class PmergeMe
