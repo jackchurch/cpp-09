@@ -14,7 +14,9 @@ int main(int argc, char* argv[])
 	myVector->mergeSort();
 	myVector->printOut();
 	myVector->beginMergin();
+	myVector->printOut();
 	delete (myVector);
+
 
 	return (0);
 }
