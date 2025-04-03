@@ -21,42 +21,21 @@ PmergeMe<Container>& PmergeMe<Container>::operator=(const PmergeMe& orignal)
     return (*this);
 }
 
-
-
 template <typename Container>
-void PmergeMe<Container>::parseInput(int argc, char *argv[])
-{
-    setMaxPairs(argc);
-    int    i = 1;
-    while (i < argc)
-    {
-        if (!isNumber(argv[i]))
-        {
-            throw std::runtime_error("Error: only input positive integers");
-        }
-        errno = 0;
-		char	*endptr;
-		long	n = std::strtol(argv[i], &endptr, 10);
-		if (errno == ERANGE || n > INT_MAX || n < INT_MIN)
-        {
-			throw std::runtime_error("Error: number out of range");
-        }
-        this->_data.push_back(static_cast<typename Container::value_type>(n));
+template <typename Iter>
+PmergeMe<Container>::PmergeMe(Iter begin, Iter end) : _data(begin, end) {}
 
-        i++;
-    }
-
-
-}
 
 template <typename Container>
 void PmergeMe<Container>::printOut()
 {
+    std::cout << "pmain: " << std::endl;
     for (int i = 0; i < (static_cast<typename Container::value_type>(this->_data.size())); i++)
         std::cout << _data[i] << " ";
     std::cout << std::endl;
-    for (int i = 0; i < (static_cast<typename Container::value_type>(this->_leftovers.size())); i++)
-        std::cout << _leftovers[i].second << " ";
+    // std::cout << "pend: " << std::endl;
+    // for (int i = 0; i < (static_cast<typename Container::value_type>(this->_leftovers.size())); i++)
+    //     std::cout << _leftovers[i].second << " ";
     std::cout << std::endl;
 
 }
@@ -169,8 +148,27 @@ void    PmergeMe<Container>::setMaxPairs(int argc)
 }
 
 template <typename Container>
-void    PmergeMe<Container>::mergeSort()
+void    PmergeMe<Container>::preamble(double duration)
 {
+    std::cout << "Time to process a range of\t" << _data.size() << " elements with std::";
+
+    if (typeid(Container) == typeid(std::vector<int>))
+        std::cout << "vector";
+    else if (typeid(Container) == typeid(std::deque<int>))
+        std::cout << "deque";
+    else
+        std::cout << "other contianer";
+
+    std::cout << " : " << duration << " us" << std::endl;
+}
+
+template <typename Container>
+void    PmergeMe<Container>::mergeSort(int argc)
+{
+    clock_t	start = clock();
+
+    setMaxPairs(argc);
+
     this->_iterationNumber = 0;
     Container   startSequence;
 
@@ -184,6 +182,11 @@ void    PmergeMe<Container>::mergeSort()
         this->_iterationNumber++;
     }
     startSequence.clear();
+    this->beginMergin();
+
+    clock_t	end = clock();
+	double	duration = static_cast<double>(end - start) * 1000000 / CLOCKS_PER_SEC;
+    preamble(duration);
 }
 
 template <typename Container>
@@ -424,10 +427,7 @@ void PmergeMe<Container>::goMerge(int j, int* jPrev)
             // jIfVectorEndReached++;
             std::advance(mainRightIT, _maxNumbersPerSet);
         }
-        if (std::abs(mainRightIT->first) != j && mainRightIT == _pMain.end())
-        {
-            std::cout << "HI" << std::endl;
-        }
+
         std::vector<std::pair<int, int> >::iterator mainMidIT = _pMain.begin();
         // Search 1 set
         insertPosition = binarySearch(pendEnd->second, mainLeftIT, mainRightIT, mainMidIT);
@@ -435,7 +435,6 @@ void PmergeMe<Container>::goMerge(int j, int* jPrev)
         // std::advance(pendIT, -1);
         for (int i = 0; i < _incrementAmout; i++)
         {
-            std::cout << pendIT->first << " : " << pendIT->second << std::endl;
             _pend.erase(pendIT);
         }
 

@@ -53,6 +53,7 @@
         "algorithm": "cpp",
         "*.tpp": "cpp",
         "iterator": "cpp",
-        "list": "cpp"
+        "list": "cpp",
+        "iomanip": "cpp"
     }
 }
