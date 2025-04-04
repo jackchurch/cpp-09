@@ -102,6 +102,13 @@ int RPN::calculate(int argc, char* argv[])
             this->_stack.push(std::atoi(token.c_str()));
         }
     }
-    std::cout << this->_stack.top() << std::endl;
-    return (0);
+	if (this->_stack.size() > 1)
+	{
+		std::cerr << "Error: possibly not enough operands." << std::endl;
+	}
+	else
+	{
+	    std::cout << this->_stack.top() << std::endl;
+	}    
+	return (0);
 }
